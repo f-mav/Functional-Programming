@@ -65,5 +65,40 @@ val docIdAndTermName = docIdAndTermId
 ```
 
 
+# Application Scenario 2: Vessel Trajectory Analytics in the Aegean Sea using Spark Dataframes
+Locally, we can run our application : spark-submit --master local[*]   ...\AegeanAnalysis\out\artifacts\AegeanAnalysis_jar\AegeanAnalysis.jar
+On the cluster:
+cd /usr/hdp/current/spark2-client
+./bin/spark-submit --class Main \
+--master yarn --deploy-mode cluster \
+--driver-memory 4g \
+--num-executors 3 --executor-memory 2g --executor-cores 1 \
+/home/fp7/AegeanAnalysis.jar
+
+Observations : The main difference is that now we have 19 jobs instead of 1. This happens because we have more actions that requires the computation of the transformations applied our DataFrame. For example, the show() action also creates a new job and we save 5 different outputs.
+For example this is the analysis with the respective code for  job 8: 
+<img width="660" height="414" alt="εικόνα" src="https://github.com/user-attachments/assets/cd358dbc-b75b-43f8-9134-89f421fefb9b" />
+
+This stage shows along the other transformations the aggregation (agg()) that happens , we show it to see how a different transformation is shown. We observe that due to the fact that it is a wide transformation we change stage (as shown before with reduceByKey). 
+The code for job 8 is :
+```
+val q3 = vesselsInBothSameDay
+  .join(aegeanDfDayDf, Seq("mmsi", "timestamp"))//join the found vessels with the df holding mmsi and timestamp
+  .agg(avg("speedoverground").alias("avg_sog"))//3rd column will be the avg sppedoverground
+
+q3.show()
+```
+# Citation
+Eclass : INF424 subject material  (this project was executed for the completion of this class)
+https://subhamkharwal.medium.com/pyspark-the-factor-of-cores-e884b2d5af6c
+https://dzone.com/articles/apache-spark-performance-tuning-degree-of-parallel
+https://sparkbyexamples.com/spark/what-is-spark-stage/
+https://sparkbyexamples.com/spark/what-is-spark-job/
+
+
+
+                                                                                                                             
+
+
 
 
